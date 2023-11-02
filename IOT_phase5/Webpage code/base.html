@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Data Update</title>
+    <style>
+        body {
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-size: cover;
+            transition: ease;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        #data, #pred_data, #tip {
+            font-size: 2em;
+            color: white;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Air-Quality-Index </h1>
+    <div id="data"></div>
+    <div id="pred_data"></div>
+    <div id="tip"></div>
+    <script>
+        const socket = new WebSocket('ws://127.0.0.1:8765');  //WebSocket server address   
+        socket.onmessage = function(event) {
+            // Update the data in real-time
+            const received_data = event.data
+	    let data = received_data.split(',')
+	    var aqi_value = parseInt(data[0])
+	    var pred_value = parseInt(data[1])
+
+            document.getElementById('data').textContent = 'AQI value from device: ' + aqi_value;
+            // Update the tip statement based on AQI value
+            const tipElement = document.getElementById('tip');
+            if (aqi_value < 800) {
+                tipElement.textContent = 'Good quality air';
+                document.body.style.backgroundImage = 'url("img/bg1.jpg")';  // Set background image for good quality air
+            } else if (aqi_value >= 800 && aqi_value < 1500) {
+                tipElement.textContent = 'Average quality air';
+                document.body.style.backgroundImage = 'url("img/bg2.jpg")';  // Set background image for average quality air
+            } else {
+                tipElement.textContent = 'Bad quality air';
+                document.body.style.backgroundImage = 'url("img/bg3.jpg")';  // Set background image for bad quality air
+            }
+
+ 
+            document.getElementById('pred_data').textContent = 'Predicted Data: ' + pred_value;
+        };
+
+        socket.onerror = function(error) {
+            console.error('WebSocket Error: ', error);
+        };
+    </script>
+</body>
+</html>
